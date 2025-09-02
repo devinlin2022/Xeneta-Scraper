@@ -25,11 +25,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install selenium pandas pygsheets requests openpyxl
 
+      - name: Create service account key file
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+        run: |
+          echo "$GCP_SA_KEY" > /tmp/service_account_key.json
+
       - name: Run Xeneta Scraper
         env:
           XENETA_USERNAME: ${{ secrets.XENETA_USERNAME }}
           XENETA_PASSWORD: ${{ secrets.XENETA_PASSWORD }}
-          GOOGLE_SHEET_CREDENTIALS: ${{ secrets.GOOGLE_SHEET_CREDENTIALS }}
         run: |
           python Xeneta_Scraper.py
           
