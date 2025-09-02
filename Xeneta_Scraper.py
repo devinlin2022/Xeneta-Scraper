@@ -76,53 +76,68 @@ def download_data(driver, link):
         
         wait = WebDriverWait(driver, 30)
         
-        # 等待下载按钮可见并可点击
-        wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="root"]/div/div[1]/div/header/div[2]/div/button[1]')))
+        # Step 1: Wait for and click the main download button
+        print("Waiting for and clicking the main download button...")
+        download_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[1]/div/header/div[2]/div/button[1]')))
+        download_button.click()
+        print("Main download button clicked. Download initiated.")
+
+        # Step 2: The previous step to click a separate .xlsx button was incorrect.
+        # The download seems to start immediately after the initial button click.
+        # We need to wait for the download process to begin before checking for completion.
         
-        element = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div/header/div[2]/div/button[1]')
-        driver.execute_script("arguments[0].click();", element)
-        print("Element clicked successfully!")
+        # Wait for the download pop-up (radix) to become invisible
+        radix_element_id = "#radix-\\:rf1\\:"
+        print(f"Waiting for element {radix_element_id} to disappear...")
+        try:
+            wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, radix_element_id)))
+            print(f"Element {radix_element_id} is no longer visible.")
+        except:
+            print(f"Element {radix_element_id} was not found, assuming download has started.")
         
-        # 使用更可靠的函数来等待下载结束
+        print("Waiting 10 seconds to allow download to begin...")
+        time.sleep(10)
+        
+        # Use the more reliable function to wait for the download to complete
         downloaded_file = wait_for_download_complete("/content", timeout=120)
         return downloaded_file
         
     except Exception as e:
         print(f"An error occurred during data download: {e}")
     finally:
-        print("任务完成，关闭浏览器。")
+        print("Task complete, closing browser.")
         driver.quit()
         
     return None
 
 def wait_for_download_complete(directory, timeout=60):
     """
-    等待下载完成的辅助函数。
-    它会检查下载目录，直到不再有 .crdownload (Chrome临时下载文件) 文件为止。
+    Helper function to wait for the download to finish.
+    It checks the download directory until there are no more .crdownload (Chrome temporary download files) files.
     """
     start_time = time.time()
-    print("正在等待文件下载完成...")
+    print("Waiting for file download to complete...")
     while time.time() - start_time < timeout:
-        # 检查目录中是否有任何以 .crdownload 结尾的文件
+        # Check if there are any files ending with .crdownload in the directory
         if not any(file.endswith('.crdownload') for file in os.listdir(directory)):
-            # 找到最新的一个.xlsx文件作为下载成功的文件
+            # Find the latest .xlsx file as the successfully downloaded file
             xlsx_files = [f for f in os.listdir(directory) if f.startswith('rate_all_') and f.endswith('.xlsx')]
             if xlsx_files:
                 latest_file = max([os.path.join(directory, f) for f in xlsx_files], key=os.path.getmtime)
-                print(f"文件下载成功: {latest_file}")
+                print(f"File downloaded successfully: {latest_file}")
                 return latest_file
-        time.sleep(1) # 每隔1秒检查一次
-    raise Exception(f"错误：文件在 {timeout} 秒内未下载完成。")
+        time.sleep(1) # Check again every 1 second
+    raise Exception(f"Error: File did not download within {timeout} seconds.")
     
 def sync_to_gsheet(xlsx_path, gsheet_id, sheet_title):
-    """将清理后的 XLSX 同步到 Google Sheet"""
-    # 从环境变量中获取 Base64 编码的凭证
+    """Syncs the cleaned XLSX to a Google Sheet"""
+    # Get the Base64 encoded credentials from the environment variable
     creds_base64 = os.getenv("GOOGLE_SHEET_CREDENTIALS")
     if not creds_base64:
         print("Error: GOOGLE_SHEET_CREDENTIALS environment variable not set.")
         return
 
-    # 解码凭证并保存到临时文件
+    # Decode the credentials and save to a temporary file
     try:
         creds_json = base64.b64decode(creds_base64).decode('utf-8')
         service_account_file = "/tmp/service_account.json"
@@ -136,12 +151,12 @@ def sync_to_gsheet(xlsx_path, gsheet_id, sheet_title):
     try:
         df_new = pd.read_excel(xlsx_path)
         
-        # 使用服务账户进行授权
+        # Authorize using the service account file
         gc = pygsheets.authorize(service_file=service_account_file)
         sh = gc.open_by_key(gsheet_id)
         wks = sh.worksheet_by_title(sheet_title)
         
-        print("成功连接到 Google Sheet。")
+        print("Successfully connected to Google Sheet.")
 
         try:
             df_old = wks.get_as_df(has_header=True, include_tailing_empty=False)
@@ -152,15 +167,15 @@ def sync_to_gsheet(xlsx_path, gsheet_id, sheet_title):
             
         wks.clear()
         wks.set_dataframe(df_all, (1,1), nan='')
-        print("数据已成功同步到 Google Sheet 并完成去重。")
+        print("Data successfully synced to Google Sheet and duplicates removed.")
     except Exception as e:
-        print(f"同步到 Google Sheet 时发生错误: {e}")
+        print(f"An error occurred while syncing to Google Sheet: {e}")
 
 if __name__ == "__main__":
     USERNAME = os.getenv("XENETA_USERNAME")
     PASSWORD = os.getenv("XENETA_PASSWORD")
     
-    # 使用硬编码的 Google Sheet ID 和工作表名称
+    # Use hardcoded Google Sheet ID and sheet title
     GSHEET_ID = "1WUBSE7UD_GrD-LziCZKUJrbC4EhqY2MmU6HA7VLJL-A"
     GSHEET_TITLE = "Data"
     
