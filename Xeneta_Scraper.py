@@ -20,7 +20,7 @@ def login(link, username, password):
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--user-data-dir=/tmp/user-data-' + str(int(time.time())))
     
-    download_dir = "/content"
+    download_dir = "/tmp"
     if not os.path.exists(download_dir):
         os.makedirs(download_dir)
         
@@ -76,6 +76,9 @@ def download_data(driver, link):
         
         wait = WebDriverWait(driver, 30)
         
+        # Get list of files before download starts
+        files_before = set(os.listdir("/tmp"))
+
         # Step 1: Wait for and click the main download button
         print("Waiting for and clicking the main download button...")
         download_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[1]/div/header/div[2]/div/button[1]')))
@@ -84,7 +87,6 @@ def download_data(driver, link):
 
         # Step 2: The previous step to click a separate .xlsx button was incorrect.
         # The download seems to start immediately after the initial button click.
-        # We need to wait for the download process to begin before checking for completion.
         
         # Wait for the download pop-up (radix) to become invisible
         radix_element_id = "#radix-\\:rf1\\:"
@@ -95,11 +97,8 @@ def download_data(driver, link):
         except:
             print(f"Element {radix_element_id} was not found, assuming download has started.")
         
-        print("Waiting 10 seconds to allow download to begin...")
-        time.sleep(10)
-        
         # Use the more reliable function to wait for the download to complete
-        downloaded_file = wait_for_download_complete("/content", timeout=120)
+        downloaded_file = wait_for_download_complete("/tmp", files_before, timeout=120)
         return downloaded_file
         
     except Exception as e:
@@ -110,23 +109,37 @@ def download_data(driver, link):
         
     return None
 
-def wait_for_download_complete(directory, timeout=60):
+def wait_for_download_complete(directory, files_before, timeout=60):
     """
     Helper function to wait for the download to finish.
-    It checks the download directory until there are no more .crdownload (Chrome temporary download files) files.
+    It actively monitors the directory for a new file to appear.
     """
     start_time = time.time()
     print("Waiting for file download to complete...")
+    
     while time.time() - start_time < timeout:
-        # Check if there are any files ending with .crdownload in the directory
-        if not any(file.endswith('.crdownload') for file in os.listdir(directory)):
-            # Find the latest .xlsx file as the successfully downloaded file
-            xlsx_files = [f for f in os.listdir(directory) if f.startswith('rate_all_') and f.endswith('.xlsx')]
-            if xlsx_files:
-                latest_file = max([os.path.join(directory, f) for f in xlsx_files], key=os.path.getmtime)
+        files_after = set(os.listdir(directory))
+        new_files = files_after - files_before
+        
+        if new_files:
+            latest_file = max([os.path.join(directory, f) for f in new_files], key=os.path.getmtime)
+            
+            # Check for both temporary and final file extensions
+            if latest_file.endswith('.crdownload') or not latest_file.endswith('.xlsx'):
+                print(f"Found temporary or non-xlsx file: {os.path.basename(latest_file)}. Waiting for it to finish...")
+                # Continue waiting
+            else:
                 print(f"File downloaded successfully: {latest_file}")
                 return latest_file
+                
         time.sleep(1) # Check again every 1 second
+    
+    # If a timeout occurs, check if a file was partially downloaded
+    files_after_timeout = set(os.listdir(directory))
+    new_files_at_timeout = files_after_timeout - files_before
+    if new_files_at_timeout:
+        print(f"Timeout reached, but found files that may be incomplete: {new_files_at_timeout}")
+    
     raise Exception(f"Error: File did not download within {timeout} seconds.")
     
 def sync_to_gsheet(xlsx_path, gsheet_id, sheet_title):
