@@ -34,7 +34,7 @@ jobs:
           python Xeneta_Scraper.py
           
       - name: Upload downloaded file as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: xeneta-data
           path: /tmp
