@@ -1,15 +1,7 @@
-import os
-import pandas as pd
-import requests
-import time
-from datetime import datetime
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import pygsheets
+import base64
 import json
 
 def login(link, username, password):
@@ -17,104 +9,70 @@ def login(link, username, password):
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--user-data-dir=/tmp/user-data-' + str(int(time.time())))
     
-    download_dir = "/tmp"
+    options.add_argument('--user-data-dir=/tmp/user-data-' + str(int(time.time())))
+
+    download_dir = "/content"
     if not os.path.exists(download_dir):
         os.makedirs(download_dir)
         
     prefs = {
         "download.default_directory": download_dir,
         "download.prompt_for_download": False,
-        "download.directory_upgrade": True,
-        "safebrowsing.enabled": True
-    }
-    options.add_experimental_option('prefs', prefs)
-    
-    try:
-        driver = webdriver.Chrome(options=options)
-        driver.implicitly_wait(10)
-        driver.get(link)
-    except Exception as e:
-        return None
-
-    wait = WebDriverWait(driver, 30)
-    
-    try:
-        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#username')))
-        driver.execute_script(f'document.querySelector("#username").value = "{username}"')
-        
-        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > div > div > form > div.ca17d988b > button')))
-        driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > div > div > form > div.ca17d988b > button").click()')
-        
-        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#password')))
-        driver.execute_script(f'document.querySelector("#password").value = "{password}"')
-        
-        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > form > div.ca17d988b > button')))
-        driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > form > div.ca17d988b > button").click()')
-        
-        return driver
-    except Exception as e:
-        driver.quit()
-        return None
-
+@@ -63,36 +67,111 @@ def login(link, username, password):
 def download_data(driver, link):
     if not driver:
+        print("No valid WebDriver instance to proceed with download.")
+        return
         return None
-        
+
     try:
         driver.get(link)
         driver.implicitly_wait(20)
-        
+        print(f"Navigated to data page: {link}")
+
         wait = WebDriverWait(driver, 30)
         
-        files_before = set(os.listdir("/tmp"))
+        # 等待下载按钮可见并可点击
+        wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="root"]/div/div[1]/div/header/div[2]/div/button[1]')))
+
+        element = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div/header/div[2]/div/button[1]')
+        driver.execute_script("arguments[0].click();", element)
+        print("Element clicked successfully!")
         
-        download_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[1]/div/header/div[2]/div/button[1]')))
-        download_button.click()
-        
-        radix_element_id = "#radix-\\:rf1\\:"
-        try:
-            wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, radix_element_id)))
-        except:
-            pass
-        
-        downloaded_file = wait_for_download_complete("/tmp", files_before, timeout=120)
-        print(downloaded_file)
+        # 使用更可靠的函数来等待下载结束
+        downloaded_file = wait_for_download_complete("/content", timeout=120)
         return downloaded_file
         
     except Exception as e:
-        pass
+        print(f"An error occurred during data download: {e}")
     finally:
-        if driver:
-            driver.quit()
+        print("任务完成，关闭浏览器。")
+        driver.quit()
         
     return None
 
-def wait_for_download_complete(directory, files_before, timeout=60):
+def wait_for_download_complete(directory, timeout=60):
+    """
+    等待下载完成的辅助函数。
+    它会检查下载目录，直到不再有 .crdownload (Chrome临时下载文件) 文件为止。
+    """
     start_time = time.time()
-    
+    print("正在等待文件下载完成...")
     while time.time() - start_time < timeout:
-        files_after = set(os.listdir(directory))
-        new_files = files_after - files_before
-        
-        if new_files:
-            latest_file = max([os.path.join(directory, f) for f in new_files], key=os.path.getmtime)
-            
-            if latest_file.endswith('.crdownload') or not latest_file.endswith('.xlsx'):
-                pass
-            else:
+        # 检查目录中是否有任何以 .crdownload 结尾的文件
+        if not any(file.endswith('.crdownload') for file in os.listdir(directory)):
+            # 找到最新的一个.xlsx文件作为下载成功的文件
+            xlsx_files = [f for f in os.listdir(directory) if f.startswith('rate_all_') and f.endswith('.xlsx')]
+            if xlsx_files:
+                latest_file = max([os.path.join(directory, f) for f in xlsx_files], key=os.path.getmtime)
+                print(f"文件下载成功: {latest_file}")
                 return latest_file
-                
-        time.sleep(1)
-    
-    files_after_timeout = set(os.listdir(directory))
-    new_files_at_timeout = files_after_timeout - files_before
-    if new_files_at_timeout:
-        pass
-    
-    raise Exception(f"File did not download within {timeout} seconds.")
-    
+        time.sleep(1) # 每隔1秒检查一次
+        
+    raise Exception(f"错误：文件在 {timeout} 秒内未下载完成。")
+
+    time.sleep(10)
 def sync_to_gsheet(xlsx_path, gsheet_id, sheet_title):
     # --- 开始修改 ---
     print(f"开始同步文件 '{xlsx_path}' 到 Google Sheet '{sheet_title}'...") # 增加日志，确认函数被调用
@@ -153,10 +111,6 @@ def sync_to_gsheet(xlsx_path, gsheet_id, sheet_title):
     except Exception as e:
         print(f"!!!!!! 上传到 Google Sheet 失败 !!!!!!")
         print(f"具体的错误信息是: {e}")
-        # 如果需要更详细的堆栈信息用于调试，可以取消下面这行的注释
-        # import traceback
-        # traceback.print_exc()
-    # --- 结束修改 ---
 
 if __name__ == "__main__":
     USERNAME = os.getenv("XENETA_USERNAME")
@@ -172,4 +126,4 @@ if __name__ == "__main__":
         driver = login("https://auth.xeneta.com/login", USERNAME, PASSWORD)
         downloaded_file_path = download_data(driver, "https://app.xeneta.com/ocean/analyze/rate")
         sync_to_gsheet(downloaded_file_path, GSHEET_ID, GSHEET_TITLE)
-
+        print("Data upload successfully!")
