@@ -46,7 +46,7 @@ def login(link, username, password):
         
         # wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > div > div > form > div.cdebb54bf > button')))
         # driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > div > div > form > div.cdebb54bf > button").click()')
-        continue_button_1 = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[type="submit"]._button-login-id')))
+        continue_button_1 = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[type="submit"][name="action"]._button-login-id')))
         continue_button_1.click()
         print("step 1 completed")
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#password')))
@@ -54,7 +54,7 @@ def login(link, username, password):
         
         # wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button')))
         # driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button").click()')
-        continue_button_2 = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[type="submit"]._button-login-password')))
+        continue_button_2 = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[type="submit"][name="action"]._button-login-password')))
         continue_button_2.click()
         print("login completed")
         return driver
