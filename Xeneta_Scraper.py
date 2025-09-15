@@ -131,7 +131,7 @@ def sync_to_gsheet(xlsx_path, gsheet_id, sheet_title):
         wks.set_dataframe(df_new, (1,1), nan='')
         print("Data Uploaded")
     except Exception as e:
-        pass
+        print(e)
 
 if __name__ == "__main__":
     USERNAME = os.getenv("XENETA_USERNAME")
