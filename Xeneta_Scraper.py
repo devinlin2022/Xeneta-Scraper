@@ -36,7 +36,6 @@ def login(link, username, password):
         driver.implicitly_wait(10)
         driver.get(link)
     except Exception as e:
-        print("login in failed")
         return None
 
     wait = WebDriverWait(driver, 30)
@@ -56,6 +55,7 @@ def login(link, username, password):
         
         return driver
     except Exception as e:
+        print("login in failed")
         driver.quit()
         return None
 
