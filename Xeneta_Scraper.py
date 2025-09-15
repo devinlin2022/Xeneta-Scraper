@@ -43,15 +43,21 @@ def login(link, username, password):
     try:
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#username')))
         driver.execute_script(f'document.querySelector("#username").value = "{username}"')
-        button_text = "Continue"
-        button = driver.find_element(By.XPATH, f"//button[text()='{button_text}']")
-        button.click()
+        # button_text = "Continue"
+        # button = driver.find_element(By.XPATH, f"//button[text()='{button_text}']")
+        # button.click()
+        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button')))
+        driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button").click()')
         print("Step 1 completed")
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#password')))
         driver.execute_script(f'document.querySelector("#password").value = "{password}"')
-        button_text = "Continue"
-        button = driver.find_element(By.XPATH, f"//button[text()='{button_text}']")
-        button.click()
+        # button_text = "Continue"
+        # button = driver.find_element(By.XPATH, f"//button[text()='{button_text}']")
+        # button.click()
+        
+        driver.execute_script(f'document.querySelector("#password").value = "{password}"')
+        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button')))
+        driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button").click()')
         print("login in successfully")
         return driver
     except Exception as e:
