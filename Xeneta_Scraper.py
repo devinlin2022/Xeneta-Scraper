@@ -44,14 +44,14 @@ def login(link, username, password):
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#username')))
         driver.execute_script(f'document.querySelector("#username").value = "{username}"')
         
-        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > div > div > form > div.ca17d988b > button')))
-        driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > div > div > form > div.ca17d988b > button").click()')
+        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[type="submit"][data-action-button-primary="true"]')))
+        driver.execute_script(f'document.querySelector("button[type="submit"][data-action-button-primary="true"]").click()')
         
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#password')))
         driver.execute_script(f'document.querySelector("#password").value = "{password}"')
         
-        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > form > div.ca17d988b > button')))
-        driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > form > div.ca17d988b > button").click()')
+        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[type="submit"][data-action-button-primary="true"]')))
+        driver.execute_script(f'document.querySelector("button[type="submit"][data-action-button-primary="true"]").click()')
         
         return driver
     except Exception as e:
