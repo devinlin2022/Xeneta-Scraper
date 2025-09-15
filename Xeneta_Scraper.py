@@ -115,7 +115,7 @@ def wait_for_download_complete(directory, files_before, timeout=60):
     raise Exception(f"File did not download within {timeout} seconds.")
     
 def sync_to_gsheet(xlsx_path, gsheet_id, sheet_title):
-    service_account_file = "/tmp/service_account_key.json"
+    service_account_file = "service_account_key.json"
     if not os.path.exists(service_account_file):
         return
 
