@@ -19,7 +19,7 @@ def login(link, username, password):
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--user-data-dir=/tmp/user-data-' + str(int(time.time())))
     
-    download_dir = "/tmp/xeneta_data"
+    download_dir = "/tmp"
     if not os.path.exists(download_dir):
         os.makedirs(download_dir)
         
@@ -43,25 +43,18 @@ def login(link, username, password):
     try:
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#username')))
         driver.execute_script(f'document.querySelector("#username").value = "{username}"')
-        # button_text = "Continue"
-        # button = driver.find_element(By.XPATH, f"//button[text()='{button_text}']")
-        # button.click()
-        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button')))
-        driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > div > div > form > div.cdebb54bf > button")')
-        print("Step 1 completed")
+        
+        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > div > div > form > div.cdebb54bf > button')))
+        driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > div > div > form > div.cdebb54bf > button").click()')
+        print("step 1 completed")
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#password')))
         driver.execute_script(f'document.querySelector("#password").value = "{password}"')
-        # button_text = "Continue"
-        # button = driver.find_element(By.XPATH, f"//button[text()='{button_text}']")
-        # button.click()
         
-        driver.execute_script(f'document.querySelector("#password").value = "{password}"')
-        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button')))
+        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button')))
         driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button").click()')
-        print("login in successfully")
+        
         return driver
     except Exception as e:
-        print("login in failed")
         driver.quit()
         return None
 
@@ -75,8 +68,7 @@ def download_data(driver, link):
         
         wait = WebDriverWait(driver, 30)
         
-        download_dir = "/tmp/xeneta_data"
-        files_before = set(os.listdir(download_dir))
+        files_before = set(os.listdir("/tmp"))
         
         download_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[1]/div/header/div[2]/div/button[1]')))
         download_button.click()
@@ -87,7 +79,7 @@ def download_data(driver, link):
         except:
             pass
         
-        downloaded_file = wait_for_download_complete(download_dir, files_before, timeout=120)
+        downloaded_file = wait_for_download_complete("/tmp", files_before, timeout=120)
         return downloaded_file
         
     except Exception as e:
