@@ -19,7 +19,7 @@ def login(link, username, password):
     prefs = {
         "download.default_directory": download_dir,
         "download.prompt_for_download": False,
-@@ -63,36 +67,111 @@ def login(link, username, password):
+
 def download_data(driver, link):
     if not driver:
         print("No valid WebDriver instance to proceed with download.")
