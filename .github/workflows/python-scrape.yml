@@ -23,12 +23,13 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install selenium pandas pygsheets requests openpyxl
-          
-      - name: Create temporary downloads directory
-        run: |
-          mkdir -p /tmp # Ensure this matches DOWNLOAD_DIR in your Python script
+          pip install selenium pandas pygsheets openpyxl
 
+      # 简化步骤：只需确保 /tmp 目录存在即可
+      - name: Create temporary directory
+        run: mkdir -p /tmp
+
+      # 将 Service Account Key 直接写入 /tmp 目录，路径与Python脚本中定义的一致
       - name: Create service account key file
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
