@@ -80,6 +80,7 @@ def download_data(driver, link):
             pass
         
         downloaded_file = wait_for_download_complete("/tmp", files_before, timeout=120)
+        print(download_file)
         return downloaded_file
         
     except Exception as e:
@@ -115,11 +116,9 @@ def wait_for_download_complete(directory, files_before, timeout=60):
     raise Exception(f"File did not download within {timeout} seconds.")
     
 def sync_to_gsheet(xlsx_path, gsheet_id, sheet_title):
-    service_account_file = "/tmp/service_account_key.json" 
-    
-    if not os.path.exists(service_account_file):
-        print("Service account key file not found.")
-        return
+    temp_dir = '/tmp' # GitHub Actions runner /tmp is a good temporary location
+    os.makedirs(temp_dir, exist_ok=True) # Ensure the directory exists
+    service_account_file = "service_account_key.json" 
 
     try:
         df_new = pd.read_excel(xlsx_path)
@@ -135,6 +134,7 @@ def sync_to_gsheet(xlsx_path, gsheet_id, sheet_title):
     except Exception as e:
         print(e)
 
+
 if __name__ == "__main__":
     USERNAME = os.getenv("XENETA_USERNAME")
     PASSWORD = os.getenv("XENETA_PASSWORD")
@@ -142,7 +142,12 @@ if __name__ == "__main__":
     GSHEET_ID = "1WUBSE7UD_GrD-LziCZKUJrbC4EhqY2MmU6HA7VLJL-A"
     GSHEET_TITLE = "Data"
     
-    driver = login("https://auth.xeneta.com/login", USERNAME, PASSWORD)   
+    driver = login("https://auth.xeneta.com/login", USERNAME, PASSWORD)    
     downloaded_file_path = download_data(driver, "https://app.xeneta.com/ocean/analyze/rate")
-    print("Data Downloaded")
-    sync_to_gsheet(downloaded_file_path, GSHEET_ID, GSHEET_TITLE)
+    
+    # THIS IS THE KEY CHANGE: Check if the download was successful
+    if downloaded_file_path:
+        print(f"Data downloaded successfully to: {downloaded_file_path}")
+        sync_to_gsheet(downloaded_file_path, GSHEET_ID, GSHEET_TITLE)
+    else:
+        print("Download failed, cannot sync to Google Sheets. Exiting.")
