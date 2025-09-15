@@ -127,8 +127,9 @@ def sync_to_gsheet(xlsx_path, gsheet_id, sheet_title):
         wks = sh.worksheet_by_title(sheet_title)
         
         wks.clear()
-            
+        print("Data Cleaned")
         wks.set_dataframe(df_new, (1,1), nan='')
+        print("Data Uploaded")
     except Exception as e:
         pass
 
@@ -139,14 +140,7 @@ if __name__ == "__main__":
     GSHEET_ID = "1WUBSE7UD_GrD-LziCZKUJrbC4EhqY2MmU6HA7VLJL-A"
     GSHEET_TITLE = "Data"
     
-    if not all([USERNAME, PASSWORD]):
-        pass
-    else:
-        driver = login("https://auth.xeneta.com/login", USERNAME, PASSWORD)
-        
-        downloaded_file_path = download_data(driver, "https://app.xeneta.com/ocean/analyze/rate")
-        
-        if downloaded_file_path:
-            sync_to_gsheet(downloaded_file_path, GSHEET_ID, GSHEET_TITLE)
-        else:
-            pass
+    driver = login("https://auth.xeneta.com/login", USERNAME, PASSWORD)   
+    downloaded_file_path = download_data(driver, "https://app.xeneta.com/ocean/analyze/rate")
+    print("Data Downloaded")
+    sync_to_gsheet(downloaded_file_path, GSHEET_ID, GSHEET_TITLE)
