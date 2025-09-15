@@ -47,7 +47,7 @@ def login(link, username, password):
         # button = driver.find_element(By.XPATH, f"//button[text()='{button_text}']")
         # button.click()
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button')))
-        driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button").click()')
+        driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > div > div > form > div.cdebb54bf > button")')
         print("Step 1 completed")
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#password')))
         driver.execute_script(f'document.querySelector("#password").value = "{password}"')
