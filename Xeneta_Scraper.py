@@ -169,11 +169,6 @@ if __name__ == "__main__":
         pass 
     else:
         driver = login("https://auth.xeneta.com/login", USERNAME, PASSWORD)
-        
         downloaded_file_path = download_data(driver, "https://app.xeneta.com/ocean/analyze/rate")
-        
-        if downloaded_file_path:
-            sync_to_gsheet(downloaded_file_path, GSHEET_ID, GSHEET_TITLE)
-        else:
-            # 您的原始逻辑
-            pass
+        sync_to_gsheet(downloaded_file_path, GSHEET_ID, GSHEET_TITLE)
+
