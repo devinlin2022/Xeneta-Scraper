@@ -43,16 +43,18 @@ def login(link, username, password):
     try:
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#username')))
         driver.execute_script(f'document.querySelector("#username").value = "{username}"')
-        
-        continue_button_1 = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[text()="Continue"]')))
-        continue_button_1.click()
-        
+        button_text = "Continue"
+        button = driver.find_element(By.XPATH, f"//button[text()='{button_text}']")
+        button.click()
+           
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#password')))
         driver.execute_script(f'document.querySelector("#password").value = "{password}"')
         
         continue_button_2 = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[text()="Continue"]')))
-        continue_button_2.click()
-        
+        button_text = "Continue"
+        button = driver.find_element(By.XPATH, f"//button[text()='{button_text}']")
+        button.click()
+        print("login in successfully")
         return driver
     except Exception as e:
         print("login in failed")
