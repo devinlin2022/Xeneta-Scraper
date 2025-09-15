@@ -24,12 +24,15 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install selenium pandas pygsheets requests openpyxl
+      - name: Create temporary downloads directory
+        run: |
+          mkdir -p /tmp/downloads # Ensure this matches DOWNLOAD_DIR in your Python script
 
       - name: Create service account key file
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         run: |
-          echo "$GCP_SA_KEY" > /tmp/service_account_key.json
+          echo "$GCP_SA_KEY" > service_account_key.json
 
       - name: Run Xeneta Scraper
         env:
