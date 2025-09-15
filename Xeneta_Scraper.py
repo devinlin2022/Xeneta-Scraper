@@ -80,6 +80,7 @@ def download_data(driver, link):
             pass
         
         downloaded_file = wait_for_download_complete("/tmp", files_before, timeout=120)
+        print(downloaded_file)
         return downloaded_file
         
     except Exception as e:
