@@ -52,9 +52,10 @@ def login(link, username, password):
         
         wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button')))
         driver.execute_script(f'document.querySelector("body > div.widget > main > section > div > div > div > form > div.cdebb54bf > button").click()')
-        
+        print("login completed")
         return driver
     except Exception as e:
+        print("login failed")
         driver.quit()
         return None
 
@@ -80,6 +81,7 @@ def download_data(driver, link):
             pass
         
         downloaded_file = wait_for_download_complete("/tmp", files_before, timeout=120)
+        print(downloaded_file)
         return downloaded_file
         
     except Exception as e:
@@ -109,6 +111,7 @@ def wait_for_download_complete(directory, files_before, timeout=60):
     
     files_after_timeout = set(os.listdir(directory))
     new_files_at_timeout = files_after_timeout - files_before
+
     if new_files_at_timeout:
         pass
     
@@ -117,18 +120,20 @@ def wait_for_download_complete(directory, files_before, timeout=60):
 def sync_to_gsheet(xlsx_path, gsheet_id, sheet_title):
     service_account_file = "/tmp/service_account_key.json"
     if not os.path.exists(service_account_file):
+        print("services account no exist")
         return
 
     try:
         df_new = pd.read_excel(xlsx_path)
-        
+        print(df_new.head())
         gc = pygsheets.authorize(service_file=service_account_file)
         sh = gc.open_by_key(gsheet_id)
         wks = sh.worksheet_by_title(sheet_title)
         
         wks.clear()
-            
+        print("data cleaned")
         wks.set_dataframe(df_new, (1,1), nan='')
+        print("data updated")
     except Exception as e:
         pass
 
@@ -145,8 +150,6 @@ if __name__ == "__main__":
         driver = login("https://auth.xeneta.com/login", USERNAME, PASSWORD)
         
         downloaded_file_path = download_data(driver, "https://app.xeneta.com/ocean/analyze/rate")
-        
-        if downloaded_file_path:
-            sync_to_gsheet(downloaded_file_path, GSHEET_ID, GSHEET_TITLE)
-        else:
-            pass
+        print(downloaded_file_path)
+        sync_to_gsheet(downloaded_file_path, GSHEET_ID, GSHEET_TITLE)
+
