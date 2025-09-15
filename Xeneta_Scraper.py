@@ -46,11 +46,9 @@ def login(link, username, password):
         button_text = "Continue"
         button = driver.find_element(By.XPATH, f"//button[text()='{button_text}']")
         button.click()
-           
+        print("Step 1 completed")
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#password')))
         driver.execute_script(f'document.querySelector("#password").value = "{password}"')
-        
-        continue_button_2 = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[text()="Continue"]')))
         button_text = "Continue"
         button = driver.find_element(By.XPATH, f"//button[text()='{button_text}']")
         button.click()
