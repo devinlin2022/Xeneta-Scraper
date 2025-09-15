@@ -115,22 +115,47 @@ def wait_for_download_complete(directory, files_before, timeout=60):
     raise Exception(f"File did not download within {timeout} seconds.")
     
 def sync_to_gsheet(xlsx_path, gsheet_id, sheet_title):
+    # --- 开始修改 ---
+    print(f"开始同步文件 '{xlsx_path}' 到 Google Sheet '{sheet_title}'...") # 增加日志，确认函数被调用
+    
     service_account_file = "/tmp/service_account_key.json"
+    
+    # 增加检查，确认密钥文件是否存在
     if not os.path.exists(service_account_file):
+        print(f"错误：Service account 密钥文件未在 '{service_account_file}' 找到！")
+        return
+
+    # 增加检查，确认下载的 excel 文件是否存在
+    if not os.path.exists(xlsx_path):
+        print(f"错误：下载的 Excel 文件 '{xlsx_path}' 不存在！无法上传。")
         return
 
     try:
         df_new = pd.read_excel(xlsx_path)
+        print("Excel 文件读取成功。")
         
         gc = pygsheets.authorize(service_file=service_account_file)
+        print("Google API 授权成功。")
+        
         sh = gc.open_by_key(gsheet_id)
+        print(f"成功打开工作簿 (Spreadsheet)。")
+        
         wks = sh.worksheet_by_title(sheet_title)
+        print(f"成功定位到工作表 (Worksheet): '{sheet_title}'。")
         
         wks.clear()
-            
+        print("工作表已清空。")
+        
         wks.set_dataframe(df_new, (1,1), nan='')
+        print("✅ 数据成功写入 Google Sheet！")
+
     except Exception as e:
-        pass
+        print(f"!!!!!! 上传到 Google Sheet 失败 !!!!!!")
+        print(f"具体的错误信息是: {e}")
+        # 如果需要更详细的堆栈信息用于调试，可以取消下面这行的注释
+        # import traceback
+        # traceback.print_exc()
+    # --- 结束修改 ---
 
 if __name__ == "__main__":
     USERNAME = os.getenv("XENETA_USERNAME")
@@ -140,7 +165,8 @@ if __name__ == "__main__":
     GSHEET_TITLE = "Data"
     
     if not all([USERNAME, PASSWORD]):
-        pass
+        # 您的原始逻辑
+        pass 
     else:
         driver = login("https://auth.xeneta.com/login", USERNAME, PASSWORD)
         
@@ -149,4 +175,5 @@ if __name__ == "__main__":
         if downloaded_file_path:
             sync_to_gsheet(downloaded_file_path, GSHEET_ID, GSHEET_TITLE)
         else:
+            # 您的原始逻辑
             pass
