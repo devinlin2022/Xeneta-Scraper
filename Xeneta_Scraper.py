@@ -38,7 +38,7 @@ def login(link, username, password):
     except Exception as e:
         return None
 
-    wait = WebDriverWait(driver, 30)
+    wait = WebDriverWait(driver, 90)
     
     try:
         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '#username')))
@@ -71,7 +71,7 @@ def download_data(driver, link):
         driver.get(link)
         driver.implicitly_wait(20)
         
-        wait = WebDriverWait(driver, 30)
+        wait = WebDriverWait(driver, 90)
         
         files_before = set(os.listdir("/tmp"))
         
