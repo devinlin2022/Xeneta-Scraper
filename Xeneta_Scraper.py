@@ -161,7 +161,7 @@ if __name__ == "__main__":
     USERNAME = os.getenv("XENETA_USERNAME")
     PASSWORD = os.getenv("XENETA_PASSWORD")
     
-    GSHEET_ID = "1WUBSE7UD_GrD-LziCZKUJrbC4EhqY2MmU6HA7VLJL-A"
+    GSHEET_ID = "18w-aiOm31RvsWXtqR2ZwdFaIIG1GOCMh1aogH4LrCnM"
     GSHEET_TITLE = "Data"
     
     if not all([USERNAME, PASSWORD]):
