@@ -119,7 +119,7 @@ def download_data(driver, link):
             
     return None
 
-def wait_for_download_complete(directory, files_before, timeout=60):
+def wait_for_download_complete(directory, files_before, timeout=120):
     start_time = time.time()
     
     while time.time() - start_time < timeout:
