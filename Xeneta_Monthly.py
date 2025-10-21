@@ -85,9 +85,9 @@ def download_data(driver, link):
 
         # STEP 2: Click the Time-filter-month button
         month_button = wait.until(EC.element_to_be_clickable(
-            (By.XPATH, '//*[@id="radix-:r6:"]/div/div[1]/button[2]')
+            (By.CSS_SELECTOR, '#radix-\\:r6\\: > div > div.border-grey-300.flex.flex-col.gap-y-4.border-r.p-6 > button:nth-child(2)')
         ))
-        month_button.click()
+        driver.execute_script('document.querySelector("#radix-\\:r6\\: > div > div.border-grey-300.flex.flex-col.gap-y-4.border-r.p-6 > button:nth-child(2)").click()')
         print("✅ Step 2: Clicked 'Time-filter-month' button.")
 
         # STEP 3: Click the Time-filter-confirm button
