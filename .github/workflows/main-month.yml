@@ -1,4 +1,4 @@
-name: Xeneta Scraper
+name: Xeneta Monthly
 
 on:
   push:
