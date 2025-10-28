@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install selenium pandas pygsheets requests openpyxl
+          pip install selenium pandas pygsheets packaging requests openpyxl
 
       - name: Create service account key file
         env:
