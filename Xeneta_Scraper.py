@@ -73,8 +73,8 @@ def download_data(driver, link):
         
         # Define a list of locators to try in order
         locators = [
-            {"method": By.XPATH, "value": '//*[@id="root"]/div/div[1]/div/header/div[2]/div/button[1]', "name": "Original XPath"},
             {"method": By.CSS_SELECTOR, "value": 'button[data-qa-id="excel-export-button"]', "name": "CSS Selector (data-qa-id)"},
+            {"method": By.XPATH, "value": '//*[@id="root"]/div/div[1]/div/header/div[2]/div/button[1]', "name": "Original XPath"},
             {"method": By.XPATH, "value": "//button[contains(., 'Excel')]", "name": "XPath (text contains 'Excel')"}
         ]
 
